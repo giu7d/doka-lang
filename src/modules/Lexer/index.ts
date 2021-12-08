@@ -6,10 +6,10 @@ import { SKIP_TOKENS } from "./components/SkipTokens";
 
 export const tokens = [
 	...BLOCK_TOKENS,
-	...IDENTIFIER_TOKENS,
 	...OPERATOR_TOKENS,
 	...DATA_TOKENS,
 	...SKIP_TOKENS,
+	...IDENTIFIER_TOKENS,
 ];
 
 export { Lexer } from "./service/ChevrotainLexer";
