@@ -14,7 +14,7 @@ export function logTree(cst: any, indentation = 0) {
 	return childrenKeys.map((key) => {
 		if (!children[key]) return;
 
-		console.log(`${Array(currentIndentation).fill("\t").join("|")}${key}`);
+		console.log(`${Array(currentIndentation).fill(" ").join("|")}${key}`);
 
 		return children[key]?.map((e: any) => logTree(e, currentIndentation));
 	});
