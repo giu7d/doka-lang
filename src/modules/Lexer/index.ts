@@ -11,3 +11,5 @@ export const tokens = [
 	...DATA_TOKENS,
 	...SKIP_TOKENS,
 ];
+
+export { Lexer } from "./service/ChevrotainLexer";

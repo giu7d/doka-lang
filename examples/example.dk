@@ -1,5 +1,6 @@
 module FizzBuzz
 	fun generate_list(size):
-		if (a == 1):
+		if (test_a):
+			<- true
 		end
 	end
