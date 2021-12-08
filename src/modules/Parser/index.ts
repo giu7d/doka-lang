@@ -64,6 +64,13 @@ export class Parser extends CstParser {
 		this.SUBRULE(this.declareModule);
 	});
 
+	/**
+	 *	@name declareModule
+	 *	@example
+	 * 		module ModuleId
+	 * 			<blockScope>
+	 * 		<EOF>
+	 */
 	private declareModule = this.RULE("declareModule", () => {
 		this.CONSUME(MODULE);
 		this.CONSUME(MODULE_ID);
@@ -72,7 +79,13 @@ export class Parser extends CstParser {
 		this.SUBRULE(this.requireEOF);
 	});
 
-	// Function
+	/**
+	 *	@name declareFunction
+	 *	@example
+	 * 		fun function_id(params):
+	 * 			<functionBlockScope>
+	 * 		end
+	 */
 	private declareFunction = this.RULE("declareFunction", () => {
 		this.CONSUME(FUNCTION);
 		this.CONSUME(DEFAULT_ID);
@@ -82,6 +95,23 @@ export class Parser extends CstParser {
 		this.CONSUME(BLOCK_END);
 	});
 
+	/**
+	 *	@name functionBlockScope
+	 *	@example
+	 * 		// fun function_id(params):
+	 * 			<blockScope>
+	 * 			<- <declareExpData>
+	 * 		// end
+	 *
+	 *	@example
+	 * 		// fun function_id(params):
+	 * 			<blockScope>
+	 * 			case:
+	 * 				(expr) -> <declareExpData>
+	 * 				_ -> <declareExpData> // default
+	 * 			end
+	 * 		// end
+	 */
 	private functionBlockScope = this.RULE("functionBlockScope", () => {
 		this.SUBRULE(this.blockScope);
 		this.OR([
@@ -91,6 +121,11 @@ export class Parser extends CstParser {
 		this.SUBRULE(this.ignoreEOL);
 	});
 
+	/**
+	 *	@name functionParamsScope
+	 *	@example
+	 * 		(params_1, params_2, params_n)
+	 */
 	private functionParamsScope = this.RULE("functionParamsScope", () => {
 		this.CONSUME(PARAMS_START);
 		this.MANY_SEP({
@@ -100,13 +135,25 @@ export class Parser extends CstParser {
 		this.CONSUME(PARAMS_END);
 	});
 
+	/**
+	 *	@name declareReturn
+	 *	@example
+	 * 		<- <declareExpData>
+	 */
 	private declareReturn = this.RULE("declareReturn", () => {
 		this.CONSUME(ASSIGN_RETURN);
 		this.SUBRULE(this.declareExpData);
 		this.SUBRULE(this.ignoreEOL);
 	});
 
-	// If
+	/**
+	 *	@name declareCondition
+	 *	@example
+	 * 		case:
+	 * 			(expr) -> <declareExpData>
+	 * 			_ -> <declareExpData> // default
+	 * 		end
+	 */
 	private declareCondition = this.RULE("declareCondition", () => {
 		this.CONSUME(IF);
 		this.SUBRULE(this.expression);
@@ -115,7 +162,12 @@ export class Parser extends CstParser {
 		this.CONSUME(BLOCK_END);
 	});
 
-	// Array
+	/**
+	 *	@name declareList
+	 *	@example
+	 * 		[item_1, item_2, item_n]
+	 *
+	 */
 	private declareList = this.RULE("declareList", () => {
 		this.CONSUME(BLOCK_START);
 		this.MANY_SEP({
@@ -125,7 +177,17 @@ export class Parser extends CstParser {
 		this.CONSUME(BLOCK_END);
 	});
 
-	// Data
+	/**
+	 *	@name declareData
+	 *	@example
+	 *		"string"
+	 *		0.00
+	 *		true
+	 *		false
+	 *		a
+	 *		a()
+	 *		[]
+	 */
 	private declareData = this.RULE("declareData", () => {
 		this.OR([
 			{ ALT: () => this.CONSUME(STRING) },
@@ -136,7 +198,13 @@ export class Parser extends CstParser {
 		]);
 	});
 
-	// Callable
+	/**
+	 *	@name declareCallable
+	 *	@example
+	 *		a
+	 *		a()
+	 *		a()()
+	 */
 	private declareCallable = this.RULE("declareCallable", () => {
 		this.CONSUME(DEFAULT_ID);
 		this.MANY({
@@ -144,7 +212,12 @@ export class Parser extends CstParser {
 		});
 	});
 
-	// Expressions
+	/**
+	 *	@name expression
+	 *	@example
+	 *		<data> <MATH_EXP>
+	 *		<data> <LOGIC_EXP>
+	 */
 	private expression = this.RULE("expression", () => {
 		this.SUBRULE(this.declareExpData);
 		this.OPTION(() =>
@@ -180,7 +253,9 @@ export class Parser extends CstParser {
 		]);
 	});
 
-	// Operators
+	/**
+	 *	@name mathOperation
+	 */
 	private mathOperation = this.RULE("mathOperation", () => {
 		this.OR([
 			{ ALT: () => this.CONSUME(ADD) },
@@ -191,6 +266,9 @@ export class Parser extends CstParser {
 		]);
 	});
 
+	/**
+	 *	@name logicOperation
+	 */
 	private logicOperation = this.RULE("logicOperation", () => {
 		this.OR([
 			{ ALT: () => this.CONSUME(AND) },
