@@ -10,6 +10,17 @@ const file = Buffer.from(fileBuffer).toString();
 
 const lexerResult = Lexer.parse(tokens, file);
 
-const parserTree = Parser.parse(lexerResult);
+const parser = new Parser();
+
+parser.input = lexerResult.tokens;
+
+const parserTree = parser.init();
 
 logTree(parserTree);
+
+console.group("\n\n---------- Errors ----------\n\n");
+console.log("Parse\n");
+console.warn(parser.errors);
+console.log("\nLexer\n");
+console.warn(lexerResult.errors);
+console.groupEnd();

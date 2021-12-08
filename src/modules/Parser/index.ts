@@ -52,16 +52,9 @@ export class Parser extends CstParser {
 	constructor() {
 		super(tokens, {
 			maxLookahead: 1,
+			recoveryEnabled: true,
 		});
 		this.performSelfAnalysis();
-	}
-
-	static parse(result: ILexingResult) {
-		const parser = new Parser();
-
-		parser.input = result.tokens;
-
-		return parser.init();
 	}
 
 	public init = this.RULE("init", () => {
