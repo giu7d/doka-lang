@@ -1,0 +1,5 @@
+module FizzBuzz
+	fun generate_list(size):
+		if (a == 1):
+		end
+	end
