@@ -1,0 +1,9 @@
+module FizzBuzz
+	fun fizz_buzz(value):
+		case:
+			(value % 15 == 0) -> "FizzBuzz"
+			(value % 5 == 0) -> "Fizz"
+			(value % 3 == 0) -> "Buzz"
+			_ -> Nil
+        end
+    end

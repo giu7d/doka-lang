@@ -1,6 +1,0 @@
-module FizzBuzz
-	fun generate_list(size):
-		if (test_a):
-			<- true
-		end
-	end
