@@ -18,6 +18,7 @@ export const SUBTRACT = Lexer.createToken("SUBTRACT", /\-/);
 export const MULTIPLY = Lexer.createToken("MULTIPLY", /\*/);
 export const DIVIDE = Lexer.createToken("DIVIDE", /\//);
 export const MOD = Lexer.createToken("MOD", /\%/);
+export const UNDERSCORE = Lexer.createToken("UNDERSCORE", /\_/);
 
 export const OPERATOR_TOKENS = [
 	AND,
@@ -38,4 +39,5 @@ export const OPERATOR_TOKENS = [
 	MULTIPLY,
 	DIVIDE,
 	MOD,
+	UNDERSCORE,
 ];
