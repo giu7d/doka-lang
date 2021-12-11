@@ -1,54 +1,8 @@
-import { CstParser, ILexingResult, EOF } from "chevrotain";
+import { CstParser, EOF } from "chevrotain";
 
-import { tokens } from "@modules/Lexer";
+import { tokens, grammar as _ } from "@modules/lexer";
 
-import {
-	MODULE,
-	EOL,
-	FUNCTION,
-	EXIT,
-	PARAMS_START,
-	PARAMS_END,
-	BLOCK_START,
-	BLOCK_END,
-	CASE,
-} from "@modules/Lexer/components/BlockTokens";
-
-import {
-	DEFAULT_ID,
-	MODULE_ID,
-} from "@modules/Lexer/components/IdentifierTokens";
-
-import {
-	BOOLEAN,
-	COMMA,
-	LIST_END,
-	LIST_START,
-	NULL,
-	NUMBER,
-	STRING,
-} from "@modules/Lexer/components/DataTokens";
-
-import {
-	ADD,
-	AND,
-	ASSIGN_FUNCTION,
-	ASSIGN_RETURN,
-	DIFFERENT,
-	DIVIDE,
-	EQUAL,
-	GREATER,
-	GREATER_OR_EQUAL,
-	MOD,
-	MULTIPLY,
-	OR,
-	UNDERSCORE,
-	SMALLER,
-	SMALLER_OR_EQUAL,
-	SUBTRACT,
-} from "@modules/Lexer/components/OperatorTokens";
-
-export class Parser extends CstParser {
+export class ChevrotainParser extends CstParser {
 	constructor() {
 		super(tokens, {
 			maxLookahead: 1,
@@ -70,8 +24,8 @@ export class Parser extends CstParser {
 	 * 		<EOF>
 	 */
 	private declareModule = this.RULE("declareModule", () => {
-		this.CONSUME(MODULE);
-		this.CONSUME(MODULE_ID);
+		this.CONSUME(_.MODULE);
+		this.CONSUME(_.MODULE_ID);
 		this.SUBRULE(this.requireEOL);
 		this.SUBRULE(this.moduleBlockScope);
 		this.SUBRULE(this.requireEOF);
@@ -96,12 +50,12 @@ export class Parser extends CstParser {
 	 * 		end
 	 */
 	private declareFunction = this.RULE("declareFunction", () => {
-		this.CONSUME(FUNCTION);
-		this.CONSUME(DEFAULT_ID);
+		this.CONSUME(_.FUNCTION);
+		this.CONSUME(_.DEFAULT_ID);
 		this.SUBRULE(this.functionParamsScope);
-		this.CONSUME(BLOCK_START);
+		this.CONSUME(_.BLOCK_START);
 		this.SUBRULE(this.functionBlockScope);
-		this.CONSUME(BLOCK_END);
+		this.CONSUME(_.BLOCK_END);
 	});
 
 	/**
@@ -136,12 +90,12 @@ export class Parser extends CstParser {
 	 * 		(params_1, params_2, params_n)
 	 */
 	private functionParamsScope = this.RULE("functionParamsScope", () => {
-		this.CONSUME(PARAMS_START);
+		this.CONSUME(_.PARAMS_START);
 		this.MANY_SEP({
-			DEF: () => this.CONSUME(DEFAULT_ID),
-			SEP: COMMA,
+			DEF: () => this.CONSUME(_.DEFAULT_ID),
+			SEP: _.COMMA,
 		});
-		this.CONSUME(PARAMS_END);
+		this.CONSUME(_.PARAMS_END);
 	});
 
 	/**
@@ -150,7 +104,7 @@ export class Parser extends CstParser {
 	 * 		<- <declareExpression>
 	 */
 	private declareReturn = this.RULE("declareReturn", () => {
-		this.CONSUME(ASSIGN_RETURN);
+		this.CONSUME(_.ASSIGN_RETURN);
 		this.SUBRULE(this.declareExpression);
 		this.SUBRULE(this.ignoreEOL);
 	});
@@ -164,14 +118,14 @@ export class Parser extends CstParser {
 	 * 		end
 	 */
 	private declareCondition = this.RULE("declareCondition", () => {
-		this.CONSUME(CASE);
-		this.CONSUME(BLOCK_START);
+		this.CONSUME(_.CASE);
+		this.CONSUME(_.BLOCK_START);
 		this.SUBRULE(this.ignoreEOL);
 		this.MANY({
 			DEF: () => this.SUBRULE(this.conditionBlockScope),
 		});
 		this.SUBRULE(this.defaultConditionBlockScope);
-		this.CONSUME(BLOCK_END);
+		this.CONSUME(_.BLOCK_END);
 	});
 
 	/**
@@ -181,7 +135,7 @@ export class Parser extends CstParser {
 	 */
 	private conditionBlockScope = this.RULE("conditionBlockScope", () => {
 		this.SUBRULE(this.declareExpression);
-		this.CONSUME(ASSIGN_FUNCTION);
+		this.CONSUME(_.ASSIGN_FUNCTION);
 		this.SUBRULE(this.returnBlockScope);
 	});
 
@@ -193,8 +147,8 @@ export class Parser extends CstParser {
 	private defaultConditionBlockScope = this.RULE(
 		"defaultConditionBlockScope",
 		() => {
-			this.CONSUME(UNDERSCORE);
-			this.CONSUME(ASSIGN_FUNCTION);
+			this.CONSUME(_.UNDERSCORE);
+			this.CONSUME(_.ASSIGN_FUNCTION);
 			this.SUBRULE(this.returnBlockScope);
 		}
 	);
@@ -216,12 +170,12 @@ export class Parser extends CstParser {
 	 *
 	 */
 	private declareList = this.RULE("declareList", () => {
-		this.CONSUME(LIST_START);
+		this.CONSUME(_.LIST_START);
 		this.MANY_SEP({
 			DEF: () => this.SUBRULE(this.declareExpression),
-			SEP: COMMA,
+			SEP: _.COMMA,
 		});
-		this.CONSUME(LIST_END);
+		this.CONSUME(_.LIST_END);
 	});
 
 	/**
@@ -229,10 +183,10 @@ export class Parser extends CstParser {
 	 */
 	private declareData = this.RULE("declareData", () => {
 		this.OR([
-			{ ALT: () => this.CONSUME(NULL) },
-			{ ALT: () => this.CONSUME(STRING) },
-			{ ALT: () => this.CONSUME(NUMBER) },
-			{ ALT: () => this.CONSUME(BOOLEAN) },
+			{ ALT: () => this.CONSUME(_.NULL) },
+			{ ALT: () => this.CONSUME(_.STRING) },
+			{ ALT: () => this.CONSUME(_.NUMBER) },
+			{ ALT: () => this.CONSUME(_.BOOLEAN) },
 			{ ALT: () => this.SUBRULE(this.declareList) },
 			{ ALT: () => this.SUBRULE(this.declareCallable) },
 			{ ALT: () => this.SUBRULE(this.priorityExpression) },
@@ -247,7 +201,7 @@ export class Parser extends CstParser {
 	 *		a()()
 	 */
 	private declareCallable = this.RULE("declareCallable", () => {
-		this.CONSUME(DEFAULT_ID);
+		this.CONSUME(_.DEFAULT_ID);
 		this.MANY({
 			DEF: () => this.SUBRULE(this.functionParamsScope),
 		});
@@ -292,9 +246,9 @@ export class Parser extends CstParser {
 	 *		( <declareExpression> )
 	 */
 	private priorityExpression = this.RULE("priorityExpression", () => {
-		this.CONSUME(PARAMS_START);
+		this.CONSUME(_.PARAMS_START);
 		this.SUBRULE(this.declareExpression);
-		this.CONSUME(PARAMS_END);
+		this.CONSUME(_.PARAMS_END);
 	});
 
 	/**
@@ -304,11 +258,11 @@ export class Parser extends CstParser {
 	 */
 	private mathOperation = this.RULE("mathOperation", () => {
 		this.OR([
-			{ ALT: () => this.CONSUME(ADD) },
-			{ ALT: () => this.CONSUME(SUBTRACT) },
-			{ ALT: () => this.CONSUME(MULTIPLY) },
-			{ ALT: () => this.CONSUME(DIVIDE) },
-			{ ALT: () => this.CONSUME(MOD) },
+			{ ALT: () => this.CONSUME(_.ADD) },
+			{ ALT: () => this.CONSUME(_.SUBTRACT) },
+			{ ALT: () => this.CONSUME(_.MULTIPLY) },
+			{ ALT: () => this.CONSUME(_.DIVIDE) },
+			{ ALT: () => this.CONSUME(_.MOD) },
 		]);
 	});
 
@@ -319,31 +273,31 @@ export class Parser extends CstParser {
 	 */
 	private logicOperation = this.RULE("logicOperation", () => {
 		this.OR([
-			{ ALT: () => this.CONSUME(AND) },
-			{ ALT: () => this.CONSUME(OR) },
-			{ ALT: () => this.CONSUME(GREATER) },
-			{ ALT: () => this.CONSUME(SMALLER) },
-			{ ALT: () => this.CONSUME(GREATER_OR_EQUAL) },
-			{ ALT: () => this.CONSUME(SMALLER_OR_EQUAL) },
-			{ ALT: () => this.CONSUME(DIFFERENT) },
-			{ ALT: () => this.CONSUME(EQUAL) },
+			{ ALT: () => this.CONSUME(_.AND) },
+			{ ALT: () => this.CONSUME(_.OR) },
+			{ ALT: () => this.CONSUME(_.GREATER) },
+			{ ALT: () => this.CONSUME(_.SMALLER) },
+			{ ALT: () => this.CONSUME(_.GREATER_OR_EQUAL) },
+			{ ALT: () => this.CONSUME(_.SMALLER_OR_EQUAL) },
+			{ ALT: () => this.CONSUME(_.DIFFERENT) },
+			{ ALT: () => this.CONSUME(_.EQUAL) },
 		]);
 	});
 
 	// EOL
 	private ignoreEOL = this.RULE("ignoreEOL", () =>
-		this.MANY({ DEF: () => this.CONSUME(EOL) })
+		this.MANY({ DEF: () => this.CONSUME(_.EOL) })
 	);
 
 	private requireEOL = this.RULE("requireEOL", () =>
-		this.AT_LEAST_ONE({ DEF: () => this.CONSUME(EOL) })
+		this.AT_LEAST_ONE({ DEF: () => this.CONSUME(_.EOL) })
 	);
 
 	// EOF
 	private requireEOF = this.RULE("requireEOF", () => {
 		this.OR([
 			{ ALT: () => this.CONSUME(EOF) },
-			{ ALT: () => this.CONSUME(EXIT) },
+			{ ALT: () => this.CONSUME(_.EXIT) },
 		]);
 	});
 }
