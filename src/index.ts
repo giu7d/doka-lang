@@ -1,26 +1,15 @@
 import { readFileSync } from "fs";
 
-import { Lexer, tokens } from "@modules/Lexer";
-import { Parser } from "@modules/Parser";
-import { logTree } from "@utils/log";
+import { generateTokens, tokens } from "@modules/lexer";
+import { parse } from "@modules/parser";
+import { logErrors, logTree } from "@utils/log";
 
-const fileBuffer = readFileSync(`${process.cwd()}/examples/fizz_buzz.dk`);
-
+const fileName = `${process.cwd()}/examples/fizz_buzz.dk`;
+const fileBuffer = readFileSync(fileName);
 const file = Buffer.from(fileBuffer).toString();
 
-const lexerResult = Lexer.parse(tokens, file);
+const lexerResult = generateTokens(file, tokens);
+const parseResult = parse(lexerResult.tokens);
 
-const parser = new Parser();
-
-parser.input = lexerResult.tokens;
-
-const parserTree = parser.init();
-
-logTree(parserTree);
-
-console.group("\n\n---------- Errors ----------\n\n");
-console.log("Parse\n");
-console.warn(parser.errors);
-console.log("\nLexer\n");
-console.warn(lexerResult.errors);
-console.groupEnd();
+logTree(parseResult.tree);
+logErrors(lexerResult.errors, parseResult.errors);
