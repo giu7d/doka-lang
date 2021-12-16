@@ -36,10 +36,19 @@ export class ChevrotainParser extends CstParser {
 			DEF: () =>
 				this.OR([
 					{ ALT: () => this.SUBRULE(this.declareFunction) },
-					{ ALT: () => this.SUBRULE(this.declareExpression) },
+					{ ALT: () => this.SUBRULE(this.declareConstant) },
 					{ ALT: () => this.SUBRULE(this.ignoreEOL) },
 				]),
 		});
+	});
+
+	private declareConstant = this.RULE("declareConstant", () => {
+		this.CONSUME(_.DEFAULT_ID);
+		this.OR([
+			{ ALT: () => this.SUBRULE(this.declareAssign) },
+			{ ALT: () => this.SUBRULE(this.declareExpression) },
+			{ ALT: () => this.SUBRULE(this.declareCallable) },
+		]);
 	});
 
 	/**
@@ -101,11 +110,11 @@ export class ChevrotainParser extends CstParser {
 	/**
 	 *	@name declareReturn
 	 *	@example
-	 * 		<- <declareExpression>
+	 * 		<- <declareConstant>
 	 */
 	private declareReturn = this.RULE("declareReturn", () => {
 		this.CONSUME(_.ASSIGN_RETURN);
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 		this.SUBRULE(this.ignoreEOL);
 	});
 
@@ -131,10 +140,10 @@ export class ChevrotainParser extends CstParser {
 	/**
 	 *	@name conditionBlockScope
 	 *	@example
-	 * 		(declareExpression) -> <returnBlockScope>
+	 * 		(declareConstant) -> <returnBlockScope>
 	 */
 	private conditionBlockScope = this.RULE("conditionBlockScope", () => {
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 		this.CONSUME(_.ASSIGN_FUNCTION);
 		this.SUBRULE(this.returnBlockScope);
 	});
@@ -159,7 +168,7 @@ export class ChevrotainParser extends CstParser {
 	 * 		<returnBlockScope><EOL>
 	 */
 	private returnBlockScope = this.RULE("returnBlockScope", () => {
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 		this.SUBRULE(this.requireEOL);
 	});
 
@@ -172,10 +181,22 @@ export class ChevrotainParser extends CstParser {
 	private declareList = this.RULE("declareList", () => {
 		this.CONSUME(_.LIST_START);
 		this.MANY_SEP({
-			DEF: () => this.SUBRULE(this.declareExpression),
+			DEF: () => this.SUBRULE(this.declareConstant),
 			SEP: _.COMMA,
 		});
 		this.CONSUME(_.LIST_END);
+	});
+
+	/**
+	 *	@name declareAssign
+	 *	@example
+	 * 		id = <declareConstant>
+	 *
+	 */
+	private declareAssign = this.RULE("declareAssign", () => {
+		this.CONSUME(_.ASSIGN);
+		this.SUBRULE(this.declareConstant);
+		this.SUBRULE(this.requireEOL);
 	});
 
 	/**
@@ -201,7 +222,6 @@ export class ChevrotainParser extends CstParser {
 	 *		a()()
 	 */
 	private declareCallable = this.RULE("declareCallable", () => {
-		this.CONSUME(_.DEFAULT_ID);
 		this.MANY({
 			DEF: () => this.SUBRULE(this.functionParamsScope),
 		});
@@ -211,7 +231,6 @@ export class ChevrotainParser extends CstParser {
 	 *	@name declareExpression
 	 */
 	private declareExpression = this.RULE("declareExpression", () => {
-		this.SUBRULE(this.declareData);
 		this.OPTION(() =>
 			this.OR([
 				{ ALT: () => this.SUBRULE(this.mathExpression) },
@@ -223,31 +242,31 @@ export class ChevrotainParser extends CstParser {
 	/**
 	 *	@name mathExpression
 	 *	@example
-	 *		<MATH_OP> <declareExpression>
+	 *		<MATH_OP> <declareConstant>
 	 */
 	private mathExpression = this.RULE("mathExpression", () => {
 		this.SUBRULE(this.mathOperation);
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 	});
 
 	/**
 	 *	@name mathExpression
 	 *	@example
-	 *		<LOGIC_OP> <declareExpression>
+	 *		<LOGIC_OP> <declareConstant>
 	 */
 	private logicalExpression = this.RULE("logicalExpression", () => {
 		this.SUBRULE(this.logicOperation);
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 	});
 
 	/**
 	 *	@name priorityExpression
 	 *	@example
-	 *		( <declareExpression> )
+	 *		( <declareConstant> )
 	 */
 	private priorityExpression = this.RULE("priorityExpression", () => {
 		this.CONSUME(_.PARAMS_START);
-		this.SUBRULE(this.declareExpression);
+		this.SUBRULE(this.declareConstant);
 		this.CONSUME(_.PARAMS_END);
 	});
 
