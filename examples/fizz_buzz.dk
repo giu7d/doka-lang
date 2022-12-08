@@ -1,3 +1,5 @@
+-- Input fizz_buzz.dk --
+
 module FizzBuzz
 	fun fizz_buzz(value):
 		case:
@@ -7,3 +9,25 @@ module FizzBuzz
 			_ -> Nil
         end
     end
+	
+	
+-- Output fizz_buzz.js --
+
+export default class FizzBuzz {
+
+	static fizz_buzz(value) {
+		if (value % 15 == 0) {
+			return "FizzBuzz"
+		}
+		
+		if (value % 5 == 0) {
+			return "Fizz"
+		}
+
+		if (value % 3 == 0) {
+			return "Buzz"
+		}
+		
+		return null
+	}	
+}
